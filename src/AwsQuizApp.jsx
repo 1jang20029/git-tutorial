@@ -2211,179 +2211,176 @@
   ];
 
   
-  function AwsQuizApp() {
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [selections, setSelections] = useState({});
-    const [showAnswer, setShowAnswer] = useState(false);
-    const [showResults, setShowResults] = useState(false);
-    const [results, setResults] = useState({ correct: 0, incorrect: 0, total: 0 });
-    const [elapsedTime, setElapsedTime] = useState(0);
-    const [isTimerRunning, setIsTimerRunning] = useState(true);
-  
-    useEffect(() => {
-      const timer = setInterval(() => {
-        if (isTimerRunning) setElapsedTime(prev => prev + 1);
-      }, 1000);
-      return () => clearInterval(timer);
-    }, [isTimerRunning]);
-  
-    const formatTime = (sec) => {
-      const h = String(Math.floor(sec / 3600)).padStart(2, '0');
-      const m = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
-      const s = String(sec % 60).padStart(2, '0');
-      return `${h}:${m}:${s}`;
-    };
-  
-    const styles = {
-      container: { maxWidth: '800px', margin: '0 auto', padding: '20px', background: '#fff', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', position: 'relative' },
-      timer: { position: 'absolute', top: '10px', right: '20px', fontWeight: 'bold', color: '#4361ee' },
-      header: { fontSize: '24px', fontWeight: 'bold' },
-      progressBar: { height: '8px', background: '#e0e0e0', borderRadius: '4px', margin: '10px 0', overflow: 'hidden' },
-      progressFill: percent => ({ height: '100%', width: `${percent}%`, backgroundColor: '#4361ee', transition: 'width 0.3s ease' }),
-      option: { padding: '15px', border: '1px solid #ddd', borderRadius: '8px', marginBottom: '10px', cursor: 'pointer' },
-      selected: { backgroundColor: '#e6f0ff', borderColor: '#4361ee' },
-      correct: { backgroundColor: '#d4edda', borderColor: '#28a745' },
-      incorrect: { backgroundColor: '#f8d7da', borderColor: '#dc3545' },
-      explanation: { fontSize: '14px', marginTop: '8px', color: '#333' },
-      questionExplanation: {
-        backgroundColor: '#f5f5f5',
-        borderLeft: '6px solid #4361ee',
-        padding: '12px',
-        borderRadius: '6px',
-        marginTop: '20px',
-        fontSize: '14px'
-      },
-      button: {
-        padding: '10px 20px',
-        border: 'none',
-        borderRadius: '4px',
-        fontWeight: 'bold',
-        cursor: 'pointer'
-      },
-      prev: { backgroundColor: '#6c757d', color: 'white' },
-      next: { backgroundColor: '#4361ee', color: 'white' },
-      submit: { backgroundColor: '#38b000', color: 'white' },
-      check: { backgroundColor: '#ffb703', color: 'black' }
-    };
-  
-    const handleOptionSelect = (qid, oid) => {
-      if (showAnswer || showResults) return;
-      const isMulti = questions.find(q => q.id === qid).correctAnswer.includes(',');
-      setSelections(prev => {
-        const current = prev[qid] || [];
-        if (isMulti) {
-          return {
-            ...prev,
-            [qid]: current.includes(oid)
-              ? current.filter(o => o !== oid)
-              : [...current, oid]
-          };
-        } else {
-          return { ...prev, [qid]: [oid] };
-        }
-      });
-    };
-  
-    const isSelected = (qid, oid) => selections[qid]?.includes(oid);
-  
-    const handleNext = () => {
-      setCurrentQuestionIndex(i => i + 1);
-      setShowAnswer(false);
-    };
-  
-    const handlePrev = () => {
-      setCurrentQuestionIndex(i => i - 1);
-      setShowAnswer(false);
-    };
-  
-    const handleSubmit = () => {
-      let correct = 0, incorrect = 0;
-      questions.forEach(q => {
-        const user = selections[q.id] || [];
-        const answer = q.correctAnswer.split(',');
-        const isCorrect = answer.length === user.length && answer.every(a => user.includes(a));
-        isCorrect ? correct++ : incorrect++;
-      });
-      setResults({ correct, incorrect, total: questions.length });
-      setShowResults(true);
-      setIsTimerRunning(false);
-    };
-  
-    const resetQuiz = () => {
-      setSelections({});
-      setCurrentQuestionIndex(0);
-      setShowAnswer(false);
-      setShowResults(false);
-      setElapsedTime(0);
-      setIsTimerRunning(true);
-    };
-  
-    const q = questions[currentQuestionIndex];
-  
-    return (
-      <div style={styles.container}>
-        <div style={styles.timer}>{formatTime(elapsedTime)}</div>
-  
-        <h1 style={styles.header}>AWS 자격증 시험 준비 퀴즈</h1>
-        <div>문제 {currentQuestionIndex + 1} / {questions.length}</div>
-  
-        <div style={styles.progressBar}>
-          <div style={styles.progressFill(((currentQuestionIndex + 1) / questions.length) * 100)} />
-        </div>
-  
-        <div style={{ margin: '20px 0' }}>
-          <strong>{q.id}. </strong>{q.question}
-        </div>
-  
-        {q.options.map(opt => {
-          const selected = isSelected(q.id, opt.id);
-          const isCorrect = q.correctAnswer.split(',').includes(opt.id);
-          const style = {
-            ...styles.option,
-            ...(selected && !showAnswer ? styles.selected : {}),
-            ...(showAnswer && isCorrect ? styles.correct : {}),
-            ...(showAnswer && selected && !isCorrect ? styles.incorrect : {})
-          };
-          return (
-            <div key={opt.id} onClick={() => handleOptionSelect(q.id, opt.id)} style={style}>
-              <strong>{opt.id}. </strong>{opt.text}
-              {showAnswer && opt.explanation && (
-                <div style={styles.explanation}>
-                  {isCorrect ? '✅ ' : '❌ '}
-                  {opt.explanation}
-                </div>
-              )}
-            </div>
-          );
-        })}
-  
-        {/* ✅ 문제 해설 표시 */}
-        {showAnswer && q.explanation && (
-          <div style={styles.questionExplanation}>
-            📘 <strong>문제 해설:</strong> {q.explanation}
+function AwsQuizApp() {
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [selections, setSelections] = useState({});
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const [results, setResults] = useState({ correct: 0, incorrect: 0, total: 0 });
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [isTimerRunning, setIsTimerRunning] = useState(true);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (isTimerRunning) setElapsedTime(prev => prev + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [isTimerRunning]);
+
+  const formatTime = (sec) => {
+    const h = String(Math.floor(sec / 3600)).padStart(2, '0');
+    const m = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
+    const s = String(sec % 60).padStart(2, '0');
+    return `${h}:${m}:${s}`;
+  };
+
+  const styles = {
+    container: { maxWidth: '800px', margin: '0 auto', padding: '20px', background: '#fff', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', position: 'relative' },
+    timer: { position: 'absolute', top: '10px', right: '20px', fontWeight: 'bold', color: '#4361ee' },
+    header: { fontSize: '24px', fontWeight: 'bold' },
+    progressBar: { height: '8px', background: '#e0e0e0', borderRadius: '4px', margin: '10px 0', overflow: 'hidden' },
+    progressFill: percent => ({ height: '100%', width: `${percent}%`, backgroundColor: '#4361ee', transition: 'width 0.3s ease' }),
+    option: { padding: '15px', border: '1px solid #ddd', borderRadius: '8px', marginBottom: '10px', cursor: 'pointer' },
+    selected: { backgroundColor: '#e6f0ff', borderColor: '#4361ee' },
+    correct: { backgroundColor: '#d4edda', borderColor: '#28a745' },
+    incorrect: { backgroundColor: '#f8d7da', borderColor: '#dc3545' },
+    explanation: { fontSize: '14px', marginTop: '8px', color: '#333' },
+    questionExplanation: {
+      backgroundColor: '#f5f5f5',
+      borderLeft: '6px solid #4361ee',
+      padding: '12px',
+      borderRadius: '6px',
+      marginTop: '20px',
+      fontSize: '14px'
+    },
+    button: {
+      padding: '10px 20px',
+      border: 'none',
+      borderRadius: '4px',
+      fontWeight: 'bold',
+      cursor: 'pointer'
+    },
+    prev: { backgroundColor: '#6c757d', color: 'white' },
+    next: { backgroundColor: '#4361ee', color: 'white' },
+    submit: { backgroundColor: '#38b000', color: 'white' },
+    check: { backgroundColor: '#ffb703', color: 'black' }
+  };
+
+  const handleOptionSelect = (qid, oid) => {
+    if (showAnswer || showResults) return;
+    const isMulti = questions.find(q => q.id === qid).correctAnswer.includes(',');
+    setSelections(prev => {
+      const current = prev[qid] || [];
+      if (isMulti) {
+        return {
+          ...prev,
+          [qid]: current.includes(oid)
+            ? current.filter(o => o !== oid)
+            : [...current, oid]
+        };
+      } else {
+        return { ...prev, [qid]: [oid] };
+      }
+    });
+  };
+
+  const isSelected = (qid, oid) => selections[qid]?.includes(oid);
+
+  const handleNext = () => {
+    setCurrentQuestionIndex(i => i + 1);
+    setShowAnswer(false);
+  };
+
+  const handlePrev = () => {
+    setCurrentQuestionIndex(i => i - 1);
+    setShowAnswer(false);
+  };
+
+  const handleSubmit = () => {
+    let correct = 0, incorrect = 0;
+    questions.forEach(q => {
+      const user = selections[q.id] || [];
+      const answer = q.correctAnswer.split(',');
+      const isCorrect = answer.length === user.length && answer.every(a => user.includes(a));
+      isCorrect ? correct++ : incorrect++;
+    });
+    setResults({ correct, incorrect, total: questions.length });
+    setShowResults(true);
+    setIsTimerRunning(false);
+  };
+
+  const resetQuiz = () => {
+    setSelections({});
+    setCurrentQuestionIndex(0);
+    setShowAnswer(false);
+    setShowResults(false);
+    setElapsedTime(0);
+    setIsTimerRunning(true);
+  };
+
+  const q = questions[currentQuestionIndex];
+
+  return (
+    <div style={styles.container}>
+      <div style={styles.timer}>{formatTime(elapsedTime)}</div>
+
+      <h1 style={styles.header}>AWS 자격증 시험 준비 퀴즈</h1>
+      <div>문제 {currentQuestionIndex + 1} / {questions.length}</div>
+
+      <div style={styles.progressBar}>
+        <div style={styles.progressFill(((currentQuestionIndex + 1) / questions.length) * 100)} />
+      </div>
+
+      <div style={{ margin: '20px 0' }}>
+        <strong>{q.id}. </strong>{q.question}
+      </div>
+
+      {q.options.map(opt => {
+        const selected = isSelected(q.id, opt.id);
+        const isCorrect = q.correctAnswer.split(',').includes(opt.id);
+        const style = {
+          ...styles.option,
+          ...(selected && !showAnswer ? styles.selected : {}),
+          ...(showAnswer && isCorrect ? styles.correct : {}),
+          ...(showAnswer && selected && !isCorrect ? styles.incorrect : {})
+        };
+        return (
+          <div key={opt.id} onClick={() => handleOptionSelect(q.id, opt.id)} style={style}>
+            <strong>{opt.id}. </strong>{opt.text}
+            {showAnswer && opt.explanation && (
+              <div style={styles.explanation}>💬 {opt.explanation}</div>
+            )}
           </div>
-        )}
-  
-        <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-          <button onClick={handlePrev} disabled={currentQuestionIndex === 0} style={{ ...styles.button, ...styles.prev }}>이전 문제</button>
-          <button onClick={() => setShowAnswer(true)} style={{ ...styles.button, ...styles.check }}>정답 확인</button>
-          {currentQuestionIndex < questions.length - 1 ? (
-            <button onClick={handleNext} style={{ ...styles.button, ...styles.next }}>다음 문제</button>
-          ) : (
-            <button onClick={handleSubmit} style={{ ...styles.button, ...styles.submit }}>제출하기</button>
-          )}
+        );
+      })}
+
+      {/* ✅ 문제 해설 표시 */}
+      {showAnswer && q.explanation && (
+        <div style={styles.questionExplanation}>
+          📘 <strong>문제 해설:</strong> {q.explanation}
         </div>
-  
-        {showResults && (
-          <div style={{ marginTop: '40px' }}>
-            <h2>퀴즈 결과</h2>
-            <p>정답: {results.correct}개 / 오답: {results.incorrect}개 / 총 {results.total}문제</p>
-            <p>총 소요 시간: {formatTime(elapsedTime)}</p>
-            <button style={{ ...styles.button, ...styles.next }} onClick={resetQuiz}>다시 시작하기</button>
-          </div>
+      )}
+
+      <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+        <button onClick={handlePrev} disabled={currentQuestionIndex === 0} style={{ ...styles.button, ...styles.prev }}>이전 문제</button>
+        <button onClick={() => setShowAnswer(true)} style={{ ...styles.button, ...styles.check }}>정답 확인</button>
+        {currentQuestionIndex < questions.length - 1 ? (
+          <button onClick={handleNext} style={{ ...styles.button, ...styles.next }}>다음 문제</button>
+        ) : (
+          <button onClick={handleSubmit} style={{ ...styles.button, ...styles.submit }}>제출하기</button>
         )}
       </div>
-    );
-  }
-  
-  export default AwsQuizApp;
+
+      {showResults && (
+        <div style={{ marginTop: '40px' }}>
+          <h2>퀴즈 결과</h2>
+          <p>정답: {results.correct}개 / 오답: {results.incorrect}개 / 총 {results.total}문제</p>
+          <p>총 소요 시간: {formatTime(elapsedTime)}</p>
+          <button style={{ ...styles.button, ...styles.next }} onClick={resetQuiz}>다시 시작하기</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default AwsQuizApp;
